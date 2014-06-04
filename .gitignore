@@ -10,3 +10,14 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+/.metadata
+/tle/.project
+/tle/.settings
+/tle/bin
+/tle/target
+/tle/.classpath
+/tle_demo/.project
+/tle_demo/.settings
+/tle_demo/build
+/tle_demo/target
+/tle_demo/.classpath
