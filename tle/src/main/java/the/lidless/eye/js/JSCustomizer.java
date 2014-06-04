@@ -4,7 +4,7 @@ package the.lidless.eye.js;
 public class JSCustomizer {
 	
 	//TODO move
-	public static final String COOKIE_EXPIRES_DOMAIN_PATH_KEY = "${the.lidless.eye.sitemark.cookie.expires_domain_path}";
+	public static final String COOKIE_EXPIRES_DOMAIN_PATH_KEY = "\\$\\{the.lidless.eye.sitemark.cookie.expires_domain_path\\}";
 
 	private String jsTemplate;
 	private String cookieExpires;

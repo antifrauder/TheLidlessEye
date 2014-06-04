@@ -15,7 +15,7 @@ public class JsServlet extends HttpServlet {
 	private static final long serialVersionUID = 3350251897008520599L;
 
 	//TODO
-	public static final String JS_TEMPLATE_PATH = "/the/lidless/eye/tle_template.js";
+	public static final String JS_TEMPLATE_PATH = "/the/lidless/eye/js/tle_template.js";
 	
 	private byte[] jsContent;
 	
@@ -31,6 +31,8 @@ public class JsServlet extends HttpServlet {
 		}
     }
 
+    //TODO url-mapping
+    
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/javascript");
 		response.getOutputStream().write(jsContent);

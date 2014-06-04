@@ -1,6 +1,7 @@
 //TODO: реализовать функцию-подобие $.map из jQuery
 var DevMark = {
 	getMark : function() {
+		var ver = 0;
 		var plugins = new Array();
 		for (var i = 0; i < navigator.plugins.length; i++) {
 			var mimeTypes = new Array();
@@ -15,8 +16,8 @@ var DevMark = {
 					.join(":"));
 		}
 
-		return [ '' + !!window.globalStorage, '' + !!window.localStorage,
-				'' + !!window.sessionStorage,
+		return ['' + ver, 
+		        '' + !!window.globalStorage, '' + !!window.localStorage, '' + !!window.sessionStorage,
 				'' + (new Date()).getTimezoneOffset(), navigator.userAgent,
 				[ screen.height, screen.width, screen.colorDepth ].join("x"),
 				plugins.join(";") ].join("$");
@@ -163,11 +164,11 @@ var SiteMark = {
 	_saveMarkToCookieStorage : function(name, value) {
 		document.cookie = name + "=; expires=Mon, 20 Sep 2010 00:00:00 UTC";
 		document.cookie = name + "=" + value + "; ${the.lidless.eye.sitemark.cookie.expires_domain_path}";
-	}
+	},
 	
 	_loadMarkFromCookieStorage : function(name) {
 		return document.cookie;
-	}
+	},
 
 	_saveMarkToGlobalStorage : function(name, value) {
 		if (this.globalStorage) {
