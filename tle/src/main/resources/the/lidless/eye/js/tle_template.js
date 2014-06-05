@@ -1,59 +1,65 @@
 //TODO: реализовать функцию-подобие $.map из jQuery
-var DevMark = {
-	getMark : function() {
-		var ver = 0;
-		var plugins = new Array();
-		for (var i = 0; i < navigator.plugins.length; i++) {
-			var mimeTypes = new Array();
-			for (var j = 0; j < navigator.plugins[i].length; j++) {
-				mimeTypes.push([ navigator.plugins[i][j].type,
-						navigator.plugins[i][j].suffixes,
-						navigator.plugins[i][j].description ].join(","));
-			}
-			plugins.push([ navigator.plugins[i].name,
-					navigator.plugins[i].filename,
-					navigator.plugins[i].description, mimeTypes.join("~") ]
-					.join(":"));
-		}
+//var DevMark = {
+//	getMark : function() {
+//		var ver = 0;
+//		var plugins = new Array();
+//		for (var i = 0; i < navigator.plugins.length; i++) {
+//			var mimeTypes = new Array();
+//			for (var j = 0; j < navigator.plugins[i].length; j++) {
+//				mimeTypes.push([ navigator.plugins[i][j].type,
+//						navigator.plugins[i][j].suffixes,
+//						navigator.plugins[i][j].description ].join(","));
+//			}
+//			plugins.push([ navigator.plugins[i].name,
+//					navigator.plugins[i].filename,
+//					navigator.plugins[i].description, mimeTypes.join("~") ]
+//					.join(":"));
+//		}
+//
+//		return ['' + ver, 
+//		        '' + !!window.globalStorage, '' + !!window.localStorage, '' + !!window.sessionStorage,
+//				'' + (new Date()).getTimezoneOffset(), navigator.userAgent,
+//				[ screen.height, screen.width, screen.colorDepth ].join("x"),
+//				plugins.join(";") ].join("$");
+//	}
+//
+//};
 
-		return ['' + ver, 
-		        '' + !!window.globalStorage, '' + !!window.localStorage, '' + !!window.sessionStorage,
-				'' + (new Date()).getTimezoneOffset(), navigator.userAgent,
-				[ screen.height, screen.width, screen.colorDepth ].join("x"),
-				plugins.join(";") ].join("$");
-	}
-
-};
-
-
-var SiteMark = {
-	MAX_RECURSION_DEPTH : 16,
-	TIMEOUT : 100,
+var SiteMark = new function() {
+	this.MAX_RECURSION_DEPTH = 16;
+	this.TIMEOUT = 100;
 	
 	//!!!
-	markName : location.hostname + "0002",
+	this.markName = location.hostname + "0003";
 	
-	globalStorage : window.globalStorage,
-	localStorage : window.localStorage,
-	sessionStorage : window.sessionStorage,
-	isDbStorage : window.openDatabase,
-	savedValues : null,
+	try {
+		this.globalStorage = window.globalStorage;
+	} catch (e) {};
+	try {
+		this.localStorage = window.localStorage;
+	} catch (e) {};
+	try {
+		this.sessionStorage = window.sessionStorage;
+	} catch (e) {};
+
+	this.isDbStorage = window.openDatabase;
+	this.savedValues = null;
 
 	//!!!
-	dbName : "hc6RTD9j",
-	tableName : "VO59Eh78",
-	nameField : "name",
-	valueField : "value",
+	this.dbName = "hc6RTD9j",
+	this.tableName = "VO59Eh78",
+	this.nameField = "name",
+	this.valueField = "value",
 
-	generateMark : function() {
+	this.generateMark = function() {
 	    function _p8(s) {
 	        var p = (Math.random().toString(16)+"000000000").substr(2,8);
 	        return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
 	    }
 	    return _p8() + _p8(true) + _p8(true) + _p8();
-	},
+	};
 
-	setMark : function (value) {
+	this.setMark = function (value) {
 		
 		//!!!
 		this._saveMarkToCookieStorage(this.markName, value);
@@ -70,9 +76,13 @@ var SiteMark = {
 		if (this.isDbStorage) {
 			this._saveMarkToDatabaseStorage(this.markName, value);
 		}
-	},
+		
+		this._saveMarkToUserdataStorage(this.markName, value);
 
-	getMark : function(callback) {
+		this._saveMarkToWindowStorage(this.markName, value);
+	};
+
+	this.getMark = function(callback) {
 		this.savedValues = new Array();
 		
 		this.savedValues["cookieStorage"] = this._loadMarkFromCookieStorage(this.markName);
@@ -89,13 +99,17 @@ var SiteMark = {
 		if (this.isDbStorage) {
 			this._loadMarkFromDatabaseStorage(this.markName);
 		}
-	
+
+		this.savedValues["userdataStorage"] = this._loadMarkFromUserdataStorage(this.markName);
+
+		this.savedValues["windowStorage"] = this._loadMarkFromWindowStorage(this.markName);
+
 		setTimeout(function() {
 			SiteMark._waitForLoadingValues(callback, 0);
 		}, this.TIMEOUT);
-	},
+	};
 
-	_waitForLoadingValues : function(callback, recursionDepth) {
+	this._waitForLoadingValues = function(callback, recursionDepth) {
 		var isAllValsLoaded = true;
 		if (this.isDbStorage) {
 			if (this.savedValues["dbStorage"] == null) {
@@ -136,13 +150,19 @@ var SiteMark = {
 				this._saveMarkToDatabaseStorage(this.markName, bestValue);
 			}
 		}
+		if (bestValue != this.savedValues["userdataStorage"]) {
+			this._saveMarkToUserdataStorage(this.markName, bestValue);
+		}
+		if (bestValue != this.savedValues["windowStorage"]) {
+			this._saveMarkToWindowStorage(this.markName, bestValue);
+		}
 	
 		if (typeof callback === "function") {
 			callback(bestValue);
 		}
-	},
+	};
 
-	_getBestMarkValue : function(marks) {
+	this._getBestMarkValue = function(marks) {
 		var candidates = new Array();
 		for (var i in marks) {
 			if (marks[i] && marks[i] !== null && marks[i] !== undefined) {
@@ -159,82 +179,159 @@ var SiteMark = {
 			}
 		}
 		return bestMarkValue;
-	},
+	};
 	
-	_saveMarkToCookieStorage : function(name, value) {
+	this._saveMarkToCookieStorage = function(name, value) {
 		document.cookie = name + "=; expires=Mon, 20 Sep 2010 00:00:00 UTC";
 		document.cookie = name + "=" + value + "; ${the.lidless.eye.sitemark.cookie.expires_domain_path}";
-	},
+	};
 	
-	_loadMarkFromCookieStorage : function(name) {
-		return document.cookie;
-	},
+	this._loadMarkFromCookieStorage = function(name) {
+		return this._getValue(document.cookie, name);
+	};
 
-	_saveMarkToGlobalStorage : function(name, value) {
+	this._saveMarkToGlobalStorage = function(name, value) {
 		if (this.globalStorage) {
 			this.globalStorage[location.host][name] = value;
 		}
-	},
+	};
 	
-	_loadMarkFromGlobalStorage : function(name) {
+	this._loadMarkFromGlobalStorage = function(name) {
 		if (this.globalStorage) {
 			return this.globalStorage[location.host][name];
 		}
-	},
+	};
 	
-	_saveMarkToLocalStorage : function(name, value) {
+	this._saveMarkToLocalStorage = function(name, value) {
 		if (this.localStorage) {
 			this.localStorage.setItem(name, value);
 		}
-	},
+	};
 	
-	_loadMarkFromLocalStorage : function(name) {
+	this._loadMarkFromLocalStorage = function(name) {
 		if (this.localStorage) {
 			return this.localStorage.getItem(name);
 		}
-	},
+	};
 	
-	_saveMarkToSessionStorage : function(name, value) {
+	this._saveMarkToSessionStorage = function(name, value) {
 		if (this.sessionStorage) {
 			this.sessionStorage.setItem(name, value);
 		}
-	},
+	};
 
-	_loadMarkFromSessionStorage : function(name) {
+	this._loadMarkFromSessionStorage = function(name) {
 		if (this.sessionStorage) {
 			return this.sessionStorage.getItem(name);
 		}
-	},
+	};
 	
-	_saveMarkToDatabaseStorage : function(name, value) {
+	this._saveMarkToDatabaseStorage = function(name, value) {
 		if (this.isDbStorage) {
-			var db = window.openDatabase(this.dbName, "", "", 1024 * 1024);
-			db.transaction(function(tx) {
-				tx.executeSql("CREATE TABLE IF NOT EXISTS " + this.tableName + "("
-						+ "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
-						+ this.nameField + " TEXT NOT NULL, " + this.valueField
-						+ " TEXT NOT NULL, " + "UNIQUE (" + this.nameField + ")" + ")",
-						[], function(tx, rs) {}, function(tx, err) {});
-				tx.executeSql("INSERT OR REPLACE " + "INTO " + this.tableName + "("
-						+ this.nameField + ", " + this.valueField + ") " + "VALUES(?, ?)", [name, value], function(tx, rs) {}, function(tx, err) {});
-			});
+			try {
+				var db = window.openDatabase(this.dbName, "", "", 1024 * 1024);
+				db.transaction(function(tx) {
+					tx.executeSql("CREATE TABLE IF NOT EXISTS " + this.tableName + "("
+							+ "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+							+ this.nameField + " TEXT NOT NULL, " + this.valueField
+							+ " TEXT NOT NULL, " + "UNIQUE (" + this.nameField + ")" + ")",
+							[], function(tx, rs) {}, function(tx, err) {});
+					tx.executeSql("INSERT OR REPLACE " + "INTO " + this.tableName + "("
+							+ this.nameField + ", " + this.valueField + ") " + "VALUES(?, ?)", [name, value], function(tx, rs) {}, function(tx, err) {});
+				});
+			} catch (e) {}
 		}
-	},
+	};
 	
-	_loadMarkFromDatabaseStorage : function(name) {
+	this._loadMarkFromDatabaseStorage = function(name) {
 		if (this.isDbStorage) {
-			var db = window.openDatabase(this.dbName, "", "", 1024 * 1024);
-			db.transaction(function(tx) {
-				tx.executeSql("SELECT " + this.valueField + " " + "FROM " + this.tableName
-						+ " " + "WHERE " + this.nameField + "=?", [name], function(tx,	result1) {
-					if (result1.rows.length >= 1) {
-						this.savedValues["dbStorage"] = result1.rows.item(0).value;
-					}
-				}, function(tx, err) {});
-			});
+			try {
+				var db = window.openDatabase(this.dbName, "", "", 1024 * 1024);
+				db.transaction(function(tx) {
+					tx.executeSql("SELECT " + this.valueField + " " + "FROM " + this.tableName
+							+ " " + "WHERE " + this.nameField + "=?", [name], function(tx,	result1) {
+						if (result1.rows.length >= 1) {
+							this.savedValues["dbStorage"] = result1.rows.item(0).value;
+						}
+					}, function(tx, err) {});
+				});
+			} catch (e) {}
 		}
-	}
+	};
 	
+	this._saveMarkToUserdataStorage = function(name, value) {
+        //!!! name
+		var element = this._createElement("div", "uel");
+        element.style.behavior = "url(#default#userData)";
+        element.setAttribute(name, value);
+        element.save(name);
+	};
+	
+	this._loadMarkFromUserdataStorage = function(name) {
+        //!!! name
+		var element = this._createElement("div", "uel");
+        element.style.behavior = "url(#default#userData)";
+        element.load(name);
+        return element.getAttribute(name);
+	};
+	
+	this._saveMarkToWindowStorage = function(name, value) {
+		window.name = this._replace(window.name, name, value);
+	};
+
+	this._loadMarkFromWindowStorage = function(name) {
+		return this._getValue(window.name, name);
+	};
+	
+	//TODO rename
+	this._getValue = function (text, name) {
+        var nameAndEqual = name + "=";
+        var textItems = text.split(/[;&]/);
+        for (var i = 0; i < textItems.length; i++) {
+            var textItem = textItems[i];
+            while (textItem.charAt(0) === " ") {
+            	textItem = textItem.substring(1, textItem.length);
+            }
+            if (textItem.indexOf(nameAndEqual) === 0) {
+                return textItem.substring(nameAndEqual.length, textItem.length);
+            }
+        }
+        return null;
+    };
+    
+    //TODO rename, rewrite
+    this._replace = function (str, key, value) {
+        if (str.indexOf("&" + key + "=") > -1 || str.indexOf(key + "=") === 0) {
+            var idx = str.indexOf("&" + key + "="),
+                end, newstr;
+            if (idx === -1) {
+                idx = str.indexOf(key + "=");
+            }
+            end = str.indexOf("&", idx + 1);
+            if (end !== -1) {
+                newstr = str.substr(0, idx) + str.substr(end + (idx ? 0 : 1)) + "&" + key + "=" + value;
+            } else {
+                newstr = str.substr(0, idx) + "&" + key + "=" + value;
+            }
+            return newstr;
+        } else {
+            return str + "&" + key + "=" + value;
+        }
+    };
+    
+    //TODO rename
+    this._createElement = function (type, name) {
+        var element = document.getElementById(name);
+        if (!element) {
+        	element = document.createElement(type);
+        }
+        element.style.visibility = "hidden";
+        element.style.position = "absolute";
+       	element.setAttribute("id", name);
+       	document.body.appendChild(element);
+        return element;
+    };
+
 };
 
 //function f(data) {
