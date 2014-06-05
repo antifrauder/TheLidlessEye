@@ -2,13 +2,12 @@
 <head>
  	<script type="text/javascript" src="js.js"></script>
 	<script type="text/javascript">
-//		alert(DevMark.getMark());
-
-		SiteMark.getMark(function f(x) { alert(x); });
-
+		window.onload = function() {
+			SiteMark.setMark("abc", "0123456789");
+			SiteMark.getMark("abc", function f(x) { alert(x); });
+		};
 	</script>
 </head>
 <body>
-	texttttt
 </body>
 </html>

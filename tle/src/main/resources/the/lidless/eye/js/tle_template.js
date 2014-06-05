@@ -26,30 +26,24 @@
 //};
 
 var SiteMark = new function() {
+
 	this.MAX_RECURSION_DEPTH = 16;
 	this.TIMEOUT = 100;
-	
-	//!!!
-	this.markName = location.hostname + "0003";
-	
-	try {
-		this.globalStorage = window.globalStorage;
-	} catch (e) {};
-	try {
-		this.localStorage = window.localStorage;
-	} catch (e) {};
-	try {
-		this.sessionStorage = window.sessionStorage;
-	} catch (e) {};
 
-	this.isDbStorage = window.openDatabase;
+	this.DB_NAME = "hc6RTD9j";
+	this.TABLE_NAME = "VO59Eh78";
+	this.NAME_FIELD = "name";
+	this.VALUE_FIELD = "value";
+
+	this.COOKIE_STORAGE = "cookieStorage";
+	this.GLOBAL_STORAGE = "globalStorage";
+	this.LOCAL_STORAGE = "localStorage";
+	this.SESSION_STORAGE = "sessionStorage";
+	this.USERDATA_STORAGE = "userdataStorage";
+	this.WINDOW_STORAGE = "windowStorage";
+	this.DATABASE_STORAGE = "databaseStorage";
+
 	this.savedValues = null;
-
-	//!!!
-	this.dbName = "hc6RTD9j",
-	this.tableName = "VO59Eh78",
-	this.nameField = "name",
-	this.valueField = "value",
 
 	this.generateMark = function() {
 	    function _p8(s) {
@@ -59,50 +53,28 @@ var SiteMark = new function() {
 	    return _p8() + _p8(true) + _p8(true) + _p8();
 	};
 
-	this.setMark = function (value) {
-		
-		//!!!
-		this._saveMarkToCookieStorage(this.markName, value);
-		
-		if (this.globalStorage) {
-			this._saveMarkToGlobalStorage(this.markName, value);
-		}
-		if (this.localStorage) {
-			this._saveMarkToLocalStorage(this.markName, value);
-		}
-		if (this.sessionStorage) {
-			this._saveMarkToSessionStorage(this.markName, value);
-		}
-		if (this.isDbStorage) {
-			this._saveMarkToDatabaseStorage(this.markName, value);
-		}
-		
-		this._saveMarkToUserdataStorage(this.markName, value);
-
-		this._saveMarkToWindowStorage(this.markName, value);
+	this.setMark = function (name, value) {
+		this._saveMarkToCookieStorage(name, value);
+		this._saveMarkToGlobalStorage(name, value);
+		this._saveMarkToLocalStorage(name, value);
+		this._saveMarkToSessionStorage(name, value);
+		this._saveMarkToDatabaseStorage(name, value);
+		this._saveMarkToUserdataStorage(name, value);
+		this._saveMarkToWindowStorage(name, value);
 	};
 
-	this.getMark = function(callback) {
+	this.getMark = function(name, callback) {
+
 		this.savedValues = new Array();
 		
-		this.savedValues["cookieStorage"] = this._loadMarkFromCookieStorage(this.markName);
-		
-		if (this.globalStorage) {
-			this.savedValues["globalStorage"] = this._loadMarkFromGlobalStorage(this.markName);
-		}
-		if (this.localStorage) {
-			this.savedValues["localStorage"] = this._loadMarkFromLocalStorage(this.markName);
-		}
-		if (this.sessionStorage) {
-			this.savedValues["sessionStorage"] = this._loadMarkFromSessionStorage(this.markName);
-		}
-		if (this.isDbStorage) {
-			this._loadMarkFromDatabaseStorage(this.markName);
-		}
+		this.savedValues[this.COOKIE_STORAGE] = this._loadMarkFromCookieStorage(name);
+		this.savedValues[this.GLOBAL_STORAGE] = this._loadMarkFromGlobalStorage(name);
+		this.savedValues[this.LOCAL_STORAGE] = this._loadMarkFromLocalStorage(name);
+		this.savedValues[this.SESSION_STORAGE] = this._loadMarkFromSessionStorage(name);
+		this.savedValues[this.USERDATA_STORAGE] = this._loadMarkFromUserdataStorage(name);
+		this.savedValues[this.WINDOW_STORAGE] = this._loadMarkFromWindowStorage(name);
 
-		this.savedValues["userdataStorage"] = this._loadMarkFromUserdataStorage(this.markName);
-
-		this.savedValues["windowStorage"] = this._loadMarkFromWindowStorage(this.markName);
+		this._loadMarkFromDatabaseStorage(name);
 
 		setTimeout(function() {
 			SiteMark._waitForLoadingValues(callback, 0);
@@ -111,11 +83,7 @@ var SiteMark = new function() {
 
 	this._waitForLoadingValues = function(callback, recursionDepth) {
 		var isAllValsLoaded = true;
-		if (this.isDbStorage) {
-			if (this.savedValues["dbStorage"] == null) {
-				isAllValsLoaded = false;
-			}
-		}
+		isAllValsLoaded &= this._isSavedMarkToDatabaseStorage();
 		if (!isAllValsLoaded) {
 			if (recursionDepth < this.MAX_RECURSION_DEPTH) {
 				setTimeout(function() {
@@ -124,39 +92,17 @@ var SiteMark = new function() {
 				return;
 			};
 		}
+
 		var bestValue = this._getBestMarkValue(this.savedValues);
 		
-		if (bestValue != this.savedValues["cookieStorage"]) {
-			this._saveMarkToCookieStorage(this.markName, bestValue);
-		} 
-			
-		if (this.globalStorage) {
-			if (bestValue != this.savedValues["globalStorage"]) {
-				this._saveMarkToGlobalStorage(this.markName, bestValue);
-			}
-		}
-		if (this.localStorage) {
-			if (bestValue != this.savedValues["localStorage"]) {
-				this._saveMarkToLocalStorage(this.markName, bestValue);
-			}
-		}
-		if (this.sessionStorage) {
-			if (bestValue != this.savedValues["sessionStorage"]) {
-				this._saveMarkToSessionStorage(this.markName, bestValue);
-			}
-		}
-		if (this.isDbStorage) {
-			if (bestValue != this.savedValues["dbStorage"]) {
-				this._saveMarkToDatabaseStorage(this.markName, bestValue);
-			}
-		}
-		if (bestValue != this.savedValues["userdataStorage"]) {
-			this._saveMarkToUserdataStorage(this.markName, bestValue);
-		}
-		if (bestValue != this.savedValues["windowStorage"]) {
-			this._saveMarkToWindowStorage(this.markName, bestValue);
-		}
-	
+		this._saveBestMarkToCookieStorage(name, bestValue);
+		this._saveBestMarkToGlobalStorage(name, bestValue);
+		this._saveBestMarkToLocalStorage(name, bestValue);
+		this._saveBestMarkToSessionStorage(name, bestValue);
+		this._saveBestMarkToUserdataStorage(name, bestValue);
+		this._saveBestMarkToWindowStorage(name, bestValue);
+		this._saveBestMarkToDatabaseStorage(name, bestValue);
+
 		if (typeof callback === "function") {
 			callback(bestValue);
 		}
@@ -185,98 +131,150 @@ var SiteMark = new function() {
 		document.cookie = name + "=; expires=Mon, 20 Sep 2010 00:00:00 UTC";
 		document.cookie = name + "=" + value + "; ${the.lidless.eye.sitemark.cookie.expires_domain_path}";
 	};
+
+	this._saveBestMarkToCookieStorage = function(name, bestValue) {
+		if (bestValue != this.savedValues[this.COOKIE_STORAGE]) {
+			this._saveMarkToCookieStorage(name, bestValue);
+		} 
+	};
 	
 	this._loadMarkFromCookieStorage = function(name) {
 		return this._getValue(document.cookie, name);
 	};
 
 	this._saveMarkToGlobalStorage = function(name, value) {
-		if (this.globalStorage) {
+		try {
 			this.globalStorage[location.host][name] = value;
-		}
+		} catch (e) {}
 	};
-	
+
+	this._saveBestMarkToGlobalStorage = function(name, bestValue) {
+		//TODO strings-> consts
+		if (bestValue != this.savedValues[this.GLOBAL_STORAGE]) {
+			this._saveMarkToGlobalStorage(name, bestValue);
+		} 
+	};
+
 	this._loadMarkFromGlobalStorage = function(name) {
-		if (this.globalStorage) {
+		try {
 			return this.globalStorage[location.host][name];
+		} catch (e) {
+			return null;
 		}
 	};
 	
 	this._saveMarkToLocalStorage = function(name, value) {
-		if (this.localStorage) {
+		try {
 			this.localStorage.setItem(name, value);
-		}
+		} catch (e) {}
 	};
-	
+
+	this._saveBestMarkToLocalStorage = function(name, bestValue) {
+		if (bestValue != this.savedValues[this.LOCAL_STORAGE]) {
+			this._saveMarkToLocalStorage(name, bestValue);
+		} 
+	};
+
 	this._loadMarkFromLocalStorage = function(name) {
-		if (this.localStorage) {
+		try {
 			return this.localStorage.getItem(name);
-		}
-	};
-	
-	this._saveMarkToSessionStorage = function(name, value) {
-		if (this.sessionStorage) {
-			this.sessionStorage.setItem(name, value);
+		} catch (e) {
+			return null;
 		}
 	};
 
+	this._saveMarkToSessionStorage = function(name, value) {
+		try {
+			this.sessionStorage.setItem(name, value);
+		} catch (e) {}
+	};
+
+	this._saveBestMarkToSessionStorage = function(name, bestValue) {
+		if (bestValue != this.savedValues[this.SESSION_STORAGE]) {
+			this._saveMarkToSessionStorage(name, bestValue);
+		} 
+	};
+
 	this._loadMarkFromSessionStorage = function(name) {
-		if (this.sessionStorage) {
+		try {
 			return this.sessionStorage.getItem(name);
+		} catch (e) {
+			return null;
 		}
 	};
-	
+
 	this._saveMarkToDatabaseStorage = function(name, value) {
-		if (this.isDbStorage) {
-			try {
-				var db = window.openDatabase(this.dbName, "", "", 1024 * 1024);
-				db.transaction(function(tx) {
-					tx.executeSql("CREATE TABLE IF NOT EXISTS " + this.tableName + "("
-							+ "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
-							+ this.nameField + " TEXT NOT NULL, " + this.valueField
-							+ " TEXT NOT NULL, " + "UNIQUE (" + this.nameField + ")" + ")",
-							[], function(tx, rs) {}, function(tx, err) {});
-					tx.executeSql("INSERT OR REPLACE " + "INTO " + this.tableName + "("
-							+ this.nameField + ", " + this.valueField + ") " + "VALUES(?, ?)", [name, value], function(tx, rs) {}, function(tx, err) {});
-				});
-			} catch (e) {}
+		try {
+			var db = window.openDatabase(this.DB_NAME, "", "", 1024 * 1024);
+			db.transaction(function(tx) {
+				tx.executeSql("CREATE TABLE IF NOT EXISTS " + this.TABLE_NAME + "("
+						+ "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+						+ this.NAME_FIELD + " TEXT NOT NULL, " + this.VALUE_FIELD
+						+ " TEXT NOT NULL, " + "UNIQUE (" + this.NAME_FIELD + ")" + ")",
+						[], function(tx, rs) {}, function(tx, err) {});
+				tx.executeSql("INSERT OR REPLACE " + "INTO " + this.TABLE_NAME + "("
+						+ this.NAME_FIELD + ", " + this.VALUE_FIELD + ") " + "VALUES(?, ?)", [name, value], function(tx, rs) {}, function(tx, err) {});
+			});
+		} catch (e) {}
+	};
+
+	this._saveBestMarkToDatabaseStorage = function(name, bestValue) {
+		if (bestValue != this.savedValues[this.DATABASE_STORAGE]) {
+			this._saveMarkToDatabaseStorage(name, bestValue);
+		} 
+	};
+
+	this._isSavedMarkToDatabaseStorage = function() {
+		if (this.savedValues[this.DATABASE_STORAGE] == null) {
+			return false;
+		} else {
+			return true;
 		}
 	};
-	
+
 	this._loadMarkFromDatabaseStorage = function(name) {
-		if (this.isDbStorage) {
-			try {
-				var db = window.openDatabase(this.dbName, "", "", 1024 * 1024);
-				db.transaction(function(tx) {
-					tx.executeSql("SELECT " + this.valueField + " " + "FROM " + this.tableName
-							+ " " + "WHERE " + this.nameField + "=?", [name], function(tx,	result1) {
-						if (result1.rows.length >= 1) {
-							this.savedValues["dbStorage"] = result1.rows.item(0).value;
-						}
-					}, function(tx, err) {});
-				});
-			} catch (e) {}
-		}
+		try {
+			var db = window.openDatabase(this.DB_NAME, "", "", 1024 * 1024);
+			db.transaction(function(tx) {
+				tx.executeSql("SELECT " + this.VALUE_FIELD + " " + "FROM " + this.TABLE_NAME
+						+ " " + "WHERE " + this.NAME_FIELD + "=?", [name], function(tx,	result1) {
+					if (result1.rows.length >= 1) {
+						this.savedValues[this.DATABASE_STORAGE] = result1.rows.item(0).value;
+					}
+				}, function(tx, err) {});
+			});
+		} catch (e) {}
 	};
 	
 	this._saveMarkToUserdataStorage = function(name, value) {
         //!!! name
-		var element = this._createElement("div", "uel");
-        element.style.behavior = "url(#default#userData)";
+		var element = this._createOrGetElement("div", "uel");
         element.setAttribute(name, value);
-        element.save(name);
 	};
-	
+
+	this._saveBestMarkToUserdataStorage = function(name, bestValue) {
+		if (bestValue != this.savedValues[this.USERDATA_STORAGE]) {
+			this._saveMarkToUserdataStorage(name, bestValue);
+		} 
+	};
+
 	this._loadMarkFromUserdataStorage = function(name) {
         //!!! name
-		var element = this._createElement("div", "uel");
-        element.style.behavior = "url(#default#userData)";
-        element.load(name);
-        return element.getAttribute(name);
+		var element = this._getElement("uel");
+		if (element)
+			return element.getAttribute(name);
+		else
+			return null;
 	};
 	
 	this._saveMarkToWindowStorage = function(name, value) {
 		window.name = this._replace(window.name, name, value);
+	};
+
+	this._saveBestMarkToWindowStorage = function(name, bestValue) {
+		if (bestValue != this.savedValues[this.WINDOW_STORAGE]) {
+			this._saveMarkToWindowStorage(name, bestValue);
+		} 
 	};
 
 	this._loadMarkFromWindowStorage = function(name) {
@@ -320,7 +318,7 @@ var SiteMark = new function() {
     };
     
     //TODO rename
-    this._createElement = function (type, name) {
+    this._createOrGetElement = function (type, name) {
         var element = document.getElementById(name);
         if (!element) {
         	element = document.createElement(type);
@@ -331,6 +329,10 @@ var SiteMark = new function() {
        	document.body.appendChild(element);
         return element;
     };
+    
+    this._getElement = function (name) {
+    	return document.getElementById(name);
+    }
 
 };
 
