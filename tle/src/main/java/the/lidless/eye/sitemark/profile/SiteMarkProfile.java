@@ -1,11 +1,15 @@
 package the.lidless.eye.sitemark.profile;
 
+<<<<<<< HEAD
 import java.util.HashSet;
+=======
+>>>>>>> 2bdbfffe1b19643922bac050182631fe7c96427d
 import java.util.Properties;
 import java.util.Set;
 
 public class SiteMarkProfile {
 
+<<<<<<< HEAD
 //	private Set<String> subTypes;
 	private Set<String> constsToCut = new HashSet<>();
 	private Set<String> funcsToCut = new HashSet<>();
@@ -36,4 +40,11 @@ public class SiteMarkProfile {
 		this.replaces = replaces;
 	}
 
+=======
+	private Set<String> subTypes;
+	private Set<String> constsToCut;
+	private Set<String> funcsToCut;
+	private Properties replaces;
+
+>>>>>>> 2bdbfffe1b19643922bac050182631fe7c96427d
 }
